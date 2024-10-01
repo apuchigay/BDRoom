@@ -1,5 +1,6 @@
 package com.example.clase20243009.Screen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,15 +20,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.clase20243009.DAO.UserDao
 import com.example.clase20243009.Model.User
+import com.example.clase20243009.Repository.userRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
 
-fun UserApp(userDao: UserDao) {
+fun UserApp(userRepository: userRepository) {
     var nombre by remember { mutableStateOf("")}
     var apellido by remember { mutableStateOf("")}
     var edad by remember { mutableStateOf("")}
@@ -72,8 +73,9 @@ fun UserApp(userDao: UserDao) {
             )
             scope.launch {
                 withContext(Dispatchers.IO){
-                    userDao.insert(user)
+                    userRepository.insert(user)
                 }
+                Toast.makeText(context, "Usuario registrado", Toast.LENGTH_SHORT).show()
             }
         }) {
             Text(text = "Registrar")
