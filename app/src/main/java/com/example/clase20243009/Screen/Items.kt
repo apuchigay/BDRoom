@@ -97,6 +97,13 @@ fun UserApp(userRepository: userRepository) {
             Text("Listar")
         }
 
+        Column{
+            users.forEach{ user ->
+                Text("${user.nombre} ${user.apellido}, Age: ${user.edad}")
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
