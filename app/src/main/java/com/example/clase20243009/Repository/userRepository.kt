@@ -11,4 +11,12 @@ class userRepository(private val userDao: UserDao) {
     suspend fun getAllUser(): List<User>{
         return userDao.getAllUsers()
     }
+
+    suspend fun deleteById(userId: Int): Int{
+        return userDao.deleteById(userId)
+    }
+
+    suspend fun delete(user: User){
+        userDao.delete(user)
+    }
 }

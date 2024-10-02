@@ -1,6 +1,7 @@
 package com.example.clase20243009.DAO
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -15,4 +16,10 @@ interface UserDao {
 
     @Query("SELECT * FROM users")
     suspend fun getAllUsers(): List<User>
+
+    @Query("DELETE FROM users WHERE id = :userId")
+    suspend fun deleteById(userId: Int): Int
+
+    @Delete
+    suspend fun delete(user: User)
 }

@@ -33,6 +33,7 @@ fun UserApp(userRepository: userRepository) {
     var apellido by remember { mutableStateOf("")}
     var edad by remember { mutableStateOf("")}
     var scope = rememberCoroutineScope()
+    var id by remember { mutableStateOf("") } // Campo para el ID a eliminar
 
     var context = LocalContext.current
 
@@ -107,5 +108,34 @@ fun UserApp(userRepository: userRepository) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = id,
+            onValueChange = { id = it },
+            label = { Text(text = "ID a eliminar") },
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = {
+            val id = id.toIntOrNull()
+            if (id != null) {
+                scope.launch {
+                    val rowsDeleted = withContext(Dispatchers.IO) {
+                        userRepository.deleteById(id)
+                    }
+                    if (rowsDeleted > 0) {
+                        Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "No se encontró un usuario con ese ID", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(context, "Por favor ingresa un ID válido", Toast.LENGTH_SHORT).show()
+            }
+        }) {
+            Text(text = "Eliminar")
+        }
     }
 }
