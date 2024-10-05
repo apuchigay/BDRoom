@@ -31,8 +31,8 @@ fun UserApp(userRepository: userRepository) {
     var nombre by remember { mutableStateOf("") }
     var apellido by remember { mutableStateOf("") }
     var edad by remember { mutableStateOf("") }
-    var idDelete by remember { mutableStateOf("") }
     var idUpdate by remember { mutableStateOf("") }
+    var isEditing by remember { mutableStateOf(false) } // Bandera para controlar si está en modo edición
     var scope = rememberCoroutineScope()
     var context = LocalContext.current
     var users by remember { mutableStateOf(listOf<User>()) }
@@ -68,7 +68,7 @@ fun UserApp(userRepository: userRepository) {
             TextField(
                 value = nombre,
                 onValueChange = { nombre = it },
-                label = { Text(text = "Nombre") },
+                label = { Text(text = "Nombre del Usuario") },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -78,7 +78,7 @@ fun UserApp(userRepository: userRepository) {
             TextField(
                 value = apellido,
                 onValueChange = { apellido = it },
-                label = { Text(text = "Apellido") },
+                label = { Text(text = "Apellido del Usuario") },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -88,32 +88,70 @@ fun UserApp(userRepository: userRepository) {
             TextField(
                 value = edad,
                 onValueChange = { edad = it },
-                label = { Text(text = "Edad") },
+                label = { Text(text = "Edad del Usuario") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón para registrar usuario
-            Button(
-                onClick = {
-                    val user = User(
-                        nombre = nombre,
-                        apellido = apellido,
-                        edad = edad.toIntOrNull() ?: 0
-                    )
-                    scope.launch {
-                        withContext(Dispatchers.IO) {
-                            userRepository.insert(user)
+            // Botón para registrar usuario, se oculta si se está en modo edición
+            if (!isEditing) {
+                Button(
+                    onClick = {
+                        val user = User(
+                            nombre = nombre,
+                            apellido = apellido,
+                            edad = edad.toIntOrNull() ?: 0
+                        )
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                userRepository.insert(user)
+                            }
+                            Toast.makeText(context, "Usuario registrado", Toast.LENGTH_SHORT).show()
+                            // Limpiar los campos
+                            nombre = ""
+                            apellido = ""
+                            edad = ""
                         }
-                        Toast.makeText(context, "Usuario registrado", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB27300)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Registrar Usuario", color = Color.White)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB27300)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Registrar Usuario", color = Color.White)
+                }
+            } else {
+                // Botón de actualizar visible solo en modo edición
+                Button(
+                    onClick = {
+                        val updatedUser = User(
+                            id = idUpdate.toInt(),
+                            nombre = nombre,
+                            apellido = apellido,
+                            edad = edad.toIntOrNull() ?: 0
+                        )
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                userRepository.update(updatedUser)
+                            }
+                            Toast.makeText(context, "Usuario actualizado", Toast.LENGTH_SHORT).show()
+                            // Limpiar los campos y volver al modo no edición
+                            nombre = ""
+                            apellido = ""
+                            edad = ""
+                            idUpdate = ""
+                            isEditing = false
+                            // Actualizar la lista de usuarios
+                            users = withContext(Dispatchers.IO) {
+                                userRepository.getAllUser()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Actualizar", color = Color.White)
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -169,6 +207,7 @@ fun UserApp(userRepository: userRepository) {
                                         apellido = user.apellido
                                         edad = user.edad.toString()
                                         idUpdate = user.id.toString()
+                                        isEditing = true // Habilitar el modo edición
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                                 ) {
